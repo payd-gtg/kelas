@@ -1,0 +1,1468 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Retro Gallery 3D - Upload Foto</title>
+    <style>
+        /* [SIMPAN SEMUA CSS YANG SAMA SEBELUMNYA DI SINI] */
+        /* ... CSS dari kode sebelumnya ... */
+               /* RESET & BASE */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: #000;
+            font-family: 'Courier New', monospace;
+        }
+
+        /* GAME CONTAINER */
+        .game-container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* CRT EFFECTS */
+        .crt-effect {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 100;
+            background: repeating-linear-gradient(
+                0deg,
+                rgba(0, 0, 0, 0.1) 0px,
+                rgba(0, 0, 0, 0.1) 1px,
+                transparent 1px,
+                transparent 2px
+            );
+        }
+
+        .crt-glow {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 99;
+            box-shadow: inset 0 0 40px rgba(255, 0, 255, 0.15);
+        }
+
+        /* MENU SCREEN - MOBILE FIRST */
+        .menu-screen {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #0a001a 0%, #220044 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+            padding: 20px;
+        }
+
+        .animated-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        .pixel-particle {
+            position: absolute;
+            width: 3px;
+            height: 3px;
+            background: #ff00ff;
+            border-radius: 50%;
+            opacity: 0;
+            animation: particleFloat 15s infinite linear;
+        }
+
+        @keyframes particleFloat {
+            0% {
+                transform: translateY(100vh) translateX(0);
+                opacity: 0;
+            }
+            10% { opacity: 0.4; }
+            90% { opacity: 0.4; }
+            100% {
+                transform: translateY(-100px) translateX(100px);
+                opacity: 0;
+            }
+        }
+
+        /* GAME TITLE */
+        .game-title {
+            font-size: 11vw;
+            font-weight: bold;
+            color: #ff00ff;
+            text-shadow: 
+                2px 2px 0 #000,
+                0 0 20px #ff00ff;
+            letter-spacing: 2px;
+            text-align: center;
+            margin-bottom: 10vh;
+            z-index: 5;
+            animation: titlePulse 2s infinite alternate;
+        }
+
+        @keyframes titlePulse {
+            0% {
+                transform: scale(1);
+                text-shadow: 2px 2px 0 #000, 0 0 20px #ff00ff;
+            }
+            100% {
+                transform: scale(1.03);
+                text-shadow: 2px 2px 0 #000, 0 0 30px #ff00ff, 0 0 40px #ff00ff;
+            }
+        }
+
+        /* MENU BUTTONS - FIXED POSITION */
+        .menu-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 4vw;
+            align-items: center;
+            z-index: 5;
+            width: 100%;
+            max-width: 320px;
+        }
+
+        .menu-btn {
+            font-family: 'Courier New', monospace;
+            font-size: 5vw;
+            color: #fff;
+            text-align: center;
+            padding: 4vw 8vw;
+            background: rgba(255, 0, 255, 0.15);
+            border: 2px solid #ff00ff;
+            border-radius: 0;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            letter-spacing: 1px;
+            width: 100%;
+            max-width: 280px;
+            min-height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            user-select: none;
+        }
+
+        .menu-btn:active {
+            transform: scale(0.95);
+            background: rgba(255, 0, 255, 0.3);
+        }
+
+        /* GALLERY SCREEN */
+        .gallery-screen {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #0a001a 0%, #1a0033 100%);
+            display: none;
+            flex-direction: column;
+            z-index: 20;
+        }
+
+        /* BACK BUTTON - FIXED POSITION */
+        .back-button {
+            position: absolute;
+            top: 5vw;
+            left: 5vw;
+            width: 12vw;
+            height: 12vw;
+            max-width: 50px;
+            max-height: 50px;
+            min-width: 40px;
+            min-height: 40px;
+            background: rgba(255, 0, 255, 0.2);
+            border: 2px solid #ff00ff;
+            color: #fff;
+            font-size: 6vw;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            z-index: 30;
+            border-radius: 50%;
+            user-select: none;
+        }
+
+        .back-button:active {
+            transform: scale(0.9);
+            background: rgba(255, 0, 255, 0.4);
+        }
+
+        /* GALLERY HEADER */
+        .gallery-header {
+            padding: 5vw 4vw;
+            text-align: center;
+            background: rgba(0, 0, 0, 0.5);
+            border-bottom: 2px solid #ff00ff;
+            z-index: 1;
+            margin-top: 15vw;
+        }
+
+        .gallery-title {
+            font-size: 7vw;
+            color: #ffff00;
+            text-shadow: 2px 2px 0 #000;
+            letter-spacing: 1px;
+            margin-bottom: 3vw;
+        }
+
+        /* NAVIGATION BUTTONS */
+        .gallery-nav {
+            display: flex;
+            gap: 3vw;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .nav-btn {
+            padding: 2vw 4vw;
+            background: rgba(0, 255, 255, 0.1);
+            border: 1px solid #00ffff;
+            color: #fff;
+            font-family: 'Courier New', monospace;
+            font-size: 3.5vw;
+            cursor: pointer;
+            border-radius: 2px;
+            user-select: none;
+            min-width: 80px;
+        }
+
+        .nav-btn.active {
+            background: rgba(255, 0, 255, 0.3);
+            border-color: #ff00ff;
+            color: #ffff00;
+        }
+
+        .nav-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* GALLERY CONTENT */
+        .gallery-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 4vw;
+            position: relative;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        /* SECTION TITLE */
+        .section-title {
+            color: #00ffff;
+            font-size: 5.5vw;
+            margin-bottom: 5vw;
+            text-shadow: 1px 1px 0 #000;
+            padding-bottom: 2vw;
+            border-bottom: 1px solid rgba(255, 0, 255, 0.3);
+            text-align: center;
+        }
+
+        /* PHOTO GRID - BIG CARDS */
+        .photo-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 5vw;
+            margin-bottom: 8vw;
+            justify-items: center;
+        }
+
+        .pixel-card {
+            width: 100%;
+            max-width: 300px;
+            height: 70vw;
+            max-height: 350px;
+            perspective: 1000px;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .pixel-card-inner {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .pixel-card.flipped .pixel-card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .card-front, .card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            display: flex;
+            flex-direction: column;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .card-front {
+            background: rgba(0, 0, 0, 0.2);
+            border: 2px solid rgba(255, 0, 255, 0.4);
+            box-shadow: 
+                0 0 15px rgba(255, 0, 255, 0.3),
+                inset 0 0 20px rgba(255, 255, 255, 0.05);
+        }
+
+        .card-back {
+            background: rgba(0, 0, 0, 0.3);
+            border: 2px solid rgba(0, 255, 255, 0.4);
+            transform: rotateY(180deg);
+            padding: 4vw;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            box-shadow: 
+                0 0 15px rgba(0, 255, 255, 0.3),
+                inset 0 0 20px rgba(255, 255, 255, 0.05);
+        }
+
+        .photo-container {
+            width: 100%;
+            height: 75%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            background: rgba(0, 0, 0, 0.1);
+        }
+
+        .photo-label {
+            color: #ffff00;
+            font-size: 4.5vw;
+            text-align: center;
+            padding: 3vw;
+            background: rgba(0, 0, 0, 0.4);
+            width: 100%;
+            font-weight: bold;
+        }
+
+        .card-back-title {
+            color: #ffff00;
+            font-size: 5vw;
+            margin-bottom: 3vw;
+            text-shadow: 1px 1px 0 #000;
+        }
+
+        .card-back-desc {
+            color: #fff;
+            font-size: 4vw;
+            line-height: 1.4;
+            padding: 0 3vw;
+            margin-bottom: 4vw;
+        }
+
+        /* BIODATA SLIDER - FIXED */
+        .biodata-slider-container {
+            margin: 6vw 0;
+            position: relative;
+            height: 75vw;
+            max-height: 350px;
+            overflow: hidden;
+        }
+
+        .biodata-slider {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            overflow-x: auto;
+            overflow-y: hidden;
+            scroll-snap-type: x mandatory;
+            -webkit-overflow-scrolling: touch;
+            scroll-behavior: smooth;
+            padding: 0 5vw;
+        }
+
+        .biodata-slider::-webkit-scrollbar {
+            display: none;
+        }
+
+        .slider-track {
+            display: flex;
+            gap: 5vw;
+            height: 100%;
+            align-items: center;
+            width: max-content;
+            padding: 0 30vw;
+        }
+
+        .biodata-card {
+            width: 70vw;
+            min-width: 70vw;
+            height: 90%;
+            background: rgba(80, 80, 80, 0.2);
+            border: 1px solid rgba(150, 150, 150, 0.3);
+            padding: 4vw;
+            scroll-snap-align: center;
+            transform-style: preserve-3d;
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border-radius: 4px;
+            transform-origin: center center;
+            cursor: pointer;
+            user-select: none;
+            position: relative;
+        }
+
+        /* 3D EFFECTS */
+        .biodata-card.active {
+            transform: translateZ(40px) scale(1.05);
+            background: rgba(255, 0, 255, 0.15);
+            border-color: rgba(255, 0, 255, 0.8);
+            box-shadow: 
+                0 15px 30px rgba(255, 0, 255, 0.4),
+                0 0 40px rgba(255, 0, 255, 0.2);
+            z-index: 10;
+        }
+
+        .biodata-card.left {
+            transform: rotateY(20deg) scale(0.9);
+            opacity: 0.8;
+            z-index: 5;
+            background: rgba(0, 255, 255, 0.1);
+            border-color: rgba(0, 255, 255, 0.4);
+        }
+
+        .biodata-card.right {
+            transform: rotateY(-20deg) scale(0.9);
+            opacity: 0.8;
+            z-index: 5;
+            background: rgba(255, 255, 0, 0.1);
+            border-color: rgba(255, 255, 0, 0.4);
+        }
+
+        /* BIODATA CONTENT */
+        .biodata-photo {
+            width: 20vw;
+            height: 20vw;
+            max-width: 90px;
+            max-height: 90px;
+            margin: 0 auto 4vw;
+            border-radius: 50%;
+            overflow: hidden;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid rgba(255, 0, 255, 0.3);
+            box-shadow: 0 0 10px rgba(255, 0, 255, 0.2);
+        }
+
+        .biodata-initial {
+            font-size: 8vw;
+            font-weight: bold;
+            color: #ff00ff;
+            text-shadow: 1px 1px 0 #000;
+        }
+
+        .biodata-name {
+            color: #ffff00;
+            font-size: 4.5vw;
+            text-align: center;
+            margin-bottom: 3vw;
+            text-shadow: 1px 1px 0 #000;
+            font-weight: bold;
+            line-height: 1.2;
+            word-wrap: break-word;
+        }
+
+        .biodata-detail {
+            color: #fff;
+            margin-bottom: 2vw;
+            font-size: 3.5vw;
+            line-height: 1.3;
+            word-wrap: break-word;
+        }
+
+        .biodata-detail span {
+            color: #00ffff;
+            font-weight: bold;
+            display: inline-block;
+            min-width: 25vw;
+        }
+
+        /* SLIDER CONTROLS */
+        .slider-controls {
+            display: flex;
+            justify-content: center;
+            gap: 5vw;
+            margin-top: 4vw;
+        }
+
+        .slider-btn {
+            width: 12vw;
+            height: 12vw;
+            max-width: 50px;
+            max-height: 50px;
+            background: rgba(255, 0, 255, 0.2);
+            border: 2px solid #ff00ff;
+            color: #fff;
+            font-size: 6vw;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            user-select: none;
+        }
+
+        .slider-btn:active {
+            transform: scale(0.9);
+            background: rgba(255, 0, 255, 0.4);
+        }
+
+        /* SCROLL INDICATOR */
+        .scroll-indicator {
+            display: flex;
+            justify-content: center;
+            gap: 2vw;
+            margin-top: 3vw;
+        }
+
+        .scroll-dot {
+            width: 2.5vw;
+            height: 2.5vw;
+            min-width: 8px;
+            min-height: 8px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .scroll-dot.active {
+            background: #ff00ff;
+            box-shadow: 0 0 5px #ff00ff;
+            transform: scale(1.3);
+        }
+
+        /* INSTRUCTION */
+        .instruction {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 3.5vw;
+            text-align: center;
+            margin-top: 4vw;
+            padding: 0 4vw;
+            line-height: 1.4;
+        }
+
+        /* TABLET */
+        @media (min-width: 768px) {
+            .game-title {
+                font-size: 48px;
+                margin-bottom: 60px;
+            }
+            
+            .menu-btn {
+                font-size: 22px;
+                padding: 15px 35px;
+                max-width: 280px;
+            }
+            
+            .menu-buttons {
+                gap: 20px;
+            }
+            
+            .back-button {
+                top: 20px;
+                left: 20px;
+                width: 50px;
+                height: 50px;
+                font-size: 24px;
+            }
+            
+            .gallery-header {
+                padding: 20px;
+                margin-top: 60px;
+            }
+            
+            .gallery-title {
+                font-size: 28px;
+            }
+            
+            .nav-btn {
+                padding: 8px 16px;
+                font-size: 14px;
+            }
+            
+            .section-title {
+                font-size: 22px;
+                margin-bottom: 20px;
+            }
+            
+            .photo-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 20px;
+                max-width: 650px;
+                margin: 0 auto 30px;
+            }
+            
+            .pixel-card {
+                height: 300px;
+                max-width: 300px;
+            }
+            
+            .photo-label {
+                font-size: 16px;
+                padding: 10px;
+            }
+            
+            .card-back-title {
+                font-size: 18px;
+            }
+            
+            .card-back-desc {
+                font-size: 14px;
+            }
+            
+            .biodata-slider-container {
+                height: 320px;
+                margin: 30px 0;
+            }
+            
+            .biodata-card {
+                width: 220px;
+                min-width: 220px;
+                padding: 20px;
+            }
+            
+            .biodata-photo {
+                width: 80px;
+                height: 80px;
+                margin-bottom: 15px;
+            }
+            
+            .biodata-initial {
+                font-size: 32px;
+            }
+            
+            .biodata-name {
+                font-size: 16px;
+                margin-bottom: 10px;
+            }
+            
+            .biodata-detail {
+                font-size: 12px;
+                margin-bottom: 6px;
+            }
+            
+            .biodata-detail span {
+                min-width: 80px;
+            }
+            
+            .slider-btn {
+                width: 50px;
+                height: 50px;
+                font-size: 24px;
+            }
+            
+            .instruction {
+                font-size: 12px;
+            }
+        }
+
+        /* DESKTOP */
+        @media (min-width: 1024px) {
+            .photo-grid {
+                grid-template-columns: repeat(3, 1fr);
+                max-width: 1000px;
+            }
+            
+            .menu-btn:hover {
+                background: rgba(255, 0, 255, 0.25);
+            }
+            
+            .menu-btn:hover::before {
+                left: 100%;
+            }
+            
+            .back-button:hover {
+                background: rgba(255, 0, 255, 0.3);
+                transform: scale(1.1);
+            }
+            
+            .nav-btn:hover {
+                background: rgba(0, 255, 255, 0.2);
+            }
+            
+            .slider-btn:hover {
+                background: rgba(255, 0, 255, 0.3);
+                transform: scale(1.1);
+            }
+            
+            .pixel-card:hover .pixel-card-inner {
+                transform: rotateY(10deg) rotateX(5deg) translateZ(20px);
+            }
+            
+            .scroll-dot:hover {
+                background: rgba(255, 255, 255, 0.5);
+            }
+        }
+
+        /* LANDSCAPE */
+        @media (max-height: 500px) and (orientation: landscape) {
+            .game-title {
+                font-size: 24px;
+                margin-bottom: 20px;
+            }
+            
+            .menu-buttons {
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: center;
+                max-width: 600px;
+            }
+            
+            .menu-btn {
+                font-size: 14px;
+                padding: 10px 20px;
+                max-width: 180px;
+            }
+            
+            .gallery-header {
+                margin-top: 10vw;
+                padding: 10px;
+            }
+            
+            .pixel-card {
+                height: 200px;
+            }
+            
+            .biodata-slider-container {
+                height: 200px;
+            }
+        }
+ 
+        /* Styles tambahan untuk uploader */
+        .upload-btn {
+            background: rgba(0, 255, 0, 0.2);
+            border: 2px solid #00ff00;
+            color: #fff;
+            padding: 12px 25px;
+            font-family: 'Courier New';
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 4px;
+            margin: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            justify-content: center;
+        }
+        
+        .upload-btn:hover {
+            background: rgba(0, 255, 0, 0.3);
+        }
+        
+        .upload-container {
+            text-align: center;
+            margin: 20px 0;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            border-radius: 4px;
+        }
+        
+        .upload-instruction {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 12px;
+            margin-top: 10px;
+        }
+        
+        .file-input-hidden {
+            display: none;
+        }
+        
+        .preview-container {
+            display: none;
+            margin: 15px auto;
+            max-width: 200px;
+            max-height: 200px;
+            overflow: hidden;
+            border: 2px solid rgba(255, 0, 255, 0.3);
+            border-radius: 4px;
+        }
+        
+        .preview-container img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <!-- Menu Screen -->
+        <div class="menu-screen" id="menuScreen">
+            <div class="animated-bg" id="particlesContainer"></div>
+            <div class="game-title">RETRO GALLERY</div>
+            
+            <!-- Menu Buttons -->
+            <div class="menu-buttons">
+                <button class="menu-btn" id="galleryBtn">GALERI FOTO</button>
+                <button class="menu-btn" id="biodataBtn">BIODATA</button>
+                <button class="menu-btn" id="uploadPhotoBtn">📷 UPLOAD FOTO</button>
+                <button class="menu-btn" id="quitBtn">KELUAR</button>
+            </div>
+            
+            <div class="instruction">Pilih menu atau upload foto sendiri</div>
+        </div>
+        
+        <!-- Gallery Screen -->
+        <div class="gallery-screen" id="galleryScreen">
+            <button class="back-button" id="backBtn">←</button>
+            
+            <div class="gallery-header">
+                <div class="gallery-title">GALLERY 3D</div>
+                <div class="gallery-nav">
+                    <button class="nav-btn active" data-section="photos">FOTO 3D</button>
+                    <button class="nav-btn" data-section="biodata">BIODATA</button>
+                    <button class="nav-btn" data-section="upload">UPLOAD FOTO</button>
+                </div>
+            </div>
+            
+            <div class="gallery-content">
+                <!-- Photos Section -->
+                <div class="section-content" id="photosSection">
+                    <div class="section-title">📸 Koleksi Foto Retro</div>
+                    <div class="photo-grid" id="photoGrid"></div>
+                    <div class="instruction">Tap kartu untuk flip • Tap kembali untuk normal</div>
+                </div>
+                
+                <!-- Biodata Section -->
+                <div class="section-content" id="biodataSection" style="display: none;">
+                    <div class="section-title">👨‍🎓 Biodata Mahasiswa</div>
+                    <div class="biodata-slider-container">
+                        <div class="biodata-slider" id="biodataSlider">
+                            <div class="slider-track" id="sliderTrack"></div>
+                        </div>
+                        <div class="slider-controls">
+                            <button class="slider-btn" id="prevBtn">←</button>
+                            <button class="slider-btn" id="nextBtn">→</button>
+                        </div>
+                        <div class="scroll-indicator" id="scrollIndicator"></div>
+                    </div>
+                    <div class="instruction">Swipe atau tap tombol untuk navigasi</div>
+                </div>
+                
+                <!-- Upload Section -->
+                <div class="section-content" id="uploadSection" style="display: none;">
+                    <div class="section-title">📤 Upload Foto Baru</div>
+                    
+                    <div class="upload-container">
+                        <button class="upload-btn" id="selectPhotoBtn">
+                            <span>📁 PILIH FOTO</span>
+                        </button>
+                        
+                        <div class="preview-container" id="previewContainer">
+                            <img id="photoPreview" src="" alt="Preview">
+                        </div>
+                        
+                        <div style="margin: 15px 0;">
+                            <input type="text" id="photoTitle" placeholder="Judul Foto" 
+                                   style="width: 80%; padding: 10px; margin: 10px 0; background: rgba(0,0,0,0.3); border: 1px solid #00ffff; color: white;">
+                            <input type="text" id="photoDesc" placeholder="Deskripsi Foto" 
+                                   style="width: 80%; padding: 10px; margin: 10px 0; background: rgba(0,0,0,0.3); border: 1px solid #00ffff; color: white;">
+                        </div>
+                        
+                        <button class="upload-btn" id="savePhotoBtn" style="background: rgba(255,0,255,0.2); border-color: #ff00ff;">
+                            💾 SIMPAN KE GALERI
+                        </button>
+                        
+                        <div class="upload-instruction">
+                            Pilih foto dari perangkat Anda (JPG/PNG, maks 2MB)
+                        </div>
+                    </div>
+                    
+                    <div class="instruction">Foto tersimpan hanya untuk sesi ini (hilang saat refresh)</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Hidden File Input -->
+        <input type="file" id="fileInput" class="file-input-hidden" accept="image/*">
+        
+        <!-- CRT Effects -->
+        <div class="crt-effect"></div>
+        <div class="crt-glow"></div>
+    </div>
+
+    <script>
+        // Data Arrays
+        const photos = [
+            { title: "SUNSET RETRO", description: "Matahari terbenam dengan efek pixel art", color: "#ff6600", year: "2024" },
+            { title: "CYBER CITY", description: "Kota futuristik dengan neon lights", color: "#00ffff", year: "2024" },
+            { title: "PIXEL ART", description: "Karya seni digital 8-bit", color: "#ff00ff", year: "2023" },
+            { title: "RETRO GAME", description: "Koleksi game klasik arcade", color: "#ffff00", year: "2023" }
+        ];
+
+        const biodataList = [
+            { name: "ALEXANDER RIZKY", nim: "210101001", prodi: "TEKNIK INFORMATIKA", semester: "5", email: "alex@student.ac.id", hobby: "Game Dev, Pixel Art" },
+            { name: "SARAH AMANDA", nim: "210101002", prodi: "SISTEM INFORMATIKA", semester: "4", email: "sarah@student.ac.id", hobby: "UI/UX Design, Photography" },
+            { name: "MICHAEL SANTOSO", nim: "210101003", prodi: "TEKNIK KOMPUTER", semester: "6", email: "michael@student.ac.id", hobby: "Network Security, Coding" }
+        ];
+
+        // User uploaded photos (disimpan di localStorage)
+        let uploadedPhotos = JSON.parse(localStorage.getItem('retroGalleryPhotos')) || [];
+        
+        // Current photo data for upload
+        let currentUpload = {
+            imageUrl: '',
+            title: '',
+            description: '',
+            year: new Date().getFullYear().toString()
+        };
+
+        // Initialize App
+        document.addEventListener('DOMContentLoaded', function() {
+            initApp();
+        });
+
+        function initApp() {
+            createParticles();
+            generatePhotoCards();
+            generateBiodataCards();
+            setupEventListeners();
+            updateCards3DEffect();
+            updateScrollIndicator();
+        }
+
+        // [SIMPAN SEMUA FUNGSI SEBELUMNYA SAMPAI generatePhotoCards()]
+
+        function generatePhotoCards() {
+            const container = document.getElementById('photoGrid');
+            container.innerHTML = '';
+            
+            // Gabungkan photos default dengan uploadedPhotos
+            const allPhotos = [...photos, ...uploadedPhotos];
+            
+            allPhotos.forEach((photo, index) => {
+                const card = document.createElement('div');
+                card.className = 'pixel-card';
+                
+                // Cek jika foto punya imageUrl (uploaded) atau color (default)
+                let photoContent;
+                if (photo.imageUrl) {
+                    // Foto dari upload - gunakan <img>
+                    photoContent = `
+                        <img src="${photo.imageUrl}" 
+                             alt="${photo.title}" 
+                             style="width: 100%; height: 100%; object-fit: cover;">
+                    `;
+                } else {
+                    // Foto default - gunakan gradient
+                    photoContent = `
+                        <div style="
+                            width: 100%;
+                            height: 100%;
+                            background: linear-gradient(135deg, ${photo.color}, ${darkenColor(photo.color, 40)});
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            color: #fff;
+                            font-size: 24px;
+                            font-weight: bold;
+                            text-shadow: 2px 2px 0 #000;
+                            text-align: center;
+                            padding: 10px;
+                        ">
+                            ${photo.title.split(' ')[0]}
+                        </div>
+                    `;
+                }
+                
+                card.innerHTML = `
+                    <div class="pixel-card-inner">
+                        <div class="card-front">
+                            <div class="photo-container">
+                                ${photoContent}
+                            </div>
+                            <div class="photo-label">${photo.title}</div>
+                        </div>
+                        <div class="card-back">
+                            <div class="card-back-title">${photo.title}</div>
+                            <div class="card-back-desc">${photo.description}</div>
+                            <div style="color: ${photo.color || '#ff00ff'}; font-size: 16px; margin-top: 10px; font-weight: bold;">
+                                ${photo.imageUrl ? '📱 FOTO UPLOAD' : `TAHUN: ${photo.year}`}
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                card.addEventListener('click', () => {
+                    card.classList.toggle('flipped');
+                    playSound('flip');
+                });
+                
+                container.appendChild(card);
+            });
+        }
+
+        function setupEventListeners() {
+            // Menu buttons
+            document.getElementById('galleryBtn').addEventListener('click', () => {
+                playSound('select');
+                showGallery();
+                switchSection('photos');
+            });
+            
+            document.getElementById('biodataBtn').addEventListener('click', () => {
+                playSound('select');
+                showGallery();
+                switchSection('biodata');
+            });
+            
+            document.getElementById('uploadPhotoBtn').addEventListener('click', () => {
+                playSound('select');
+                showGallery();
+                switchSection('upload');
+            });
+            
+            document.getElementById('quitBtn').addEventListener('click', () => {
+                playSound('quit');
+                showExitScreen();
+            });
+            
+            // Back button
+            document.getElementById('backBtn').addEventListener('click', () => {
+                playSound('back');
+                hideGallery();
+            });
+            
+            // Navigation tabs
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    switchSection(this.dataset.section);
+                    playSound('click');
+                });
+            });
+            
+            // Upload functionality
+            setupUploadFunctionality();
+            
+            // Slider controls
+            let isAnimating = false;
+            document.getElementById('prevBtn').addEventListener('click', () => {
+                if (!isAnimating) {
+                    isAnimating = true;
+                    navigateSlider(-1);
+                    playSound('slide');
+                    setTimeout(() => isAnimating = false, 300);
+                }
+            });
+            
+            document.getElementById('nextBtn').addEventListener('click', () => {
+                if (!isAnimating) {
+                    isAnimating = true;
+                    navigateSlider(1);
+                    playSound('slide');
+                    setTimeout(() => isAnimating = false, 300);
+                }
+            });
+            
+            // Slider scroll event
+            const slider = document.getElementById('biodataSlider');
+            let scrollTimeout;
+            slider.addEventListener('scroll', () => {
+                clearTimeout(scrollTimeout);
+                scrollTimeout = setTimeout(() => {
+                    updateCards3DEffect();
+                }, 100);
+            });
+        }
+
+        function setupUploadFunctionality() {
+            const fileInput = document.getElementById('fileInput');
+            const selectBtn = document.getElementById('selectPhotoBtn');
+            const saveBtn = document.getElementById('savePhotoBtn');
+            const previewContainer = document.getElementById('previewContainer');
+            const photoPreview = document.getElementById('photoPreview');
+            const photoTitle = document.getElementById('photoTitle');
+            const photoDesc = document.getElementById('photoDesc');
+            
+            // Buka file dialog
+            selectBtn.addEventListener('click', () => {
+                fileInput.click();
+            });
+            
+            // Handle file selection
+            fileInput.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (!file) return;
+                
+                // Validasi ukuran file (max 2MB)
+                if (file.size > 2 * 1024 * 1024) {
+                    alert('Ukuran file terlalu besar! Maksimal 2MB.');
+                    return;
+                }
+                
+                // Validasi tipe file
+                if (!file.type.match('image.*')) {
+                    alert('Hanya file gambar yang diizinkan!');
+                    return;
+                }
+                
+                const reader = new FileReader();
+                
+                reader.onload = function(event) {
+                    // Tampilkan preview
+                    currentUpload.imageUrl = event.target.result;
+                    photoPreview.src = currentUpload.imageUrl;
+                    previewContainer.style.display = 'block';
+                    
+                    // Isi otomatis judul dari nama file
+                    photoTitle.value = file.name.replace(/\.[^/.]+$/, "").toUpperCase();
+                    photoDesc.value = `Foto yang diupload pada ${new Date().toLocaleDateString()}`;
+                    
+                    playSound('select');
+                };
+                
+                reader.readAsDataURL(file);
+            });
+            
+            // Handle save photo
+            saveBtn.addEventListener('click', () => {
+                if (!currentUpload.imageUrl) {
+                    alert('Silakan pilih foto terlebih dahulu!');
+                    return;
+                }
+                
+                if (!photoTitle.value.trim()) {
+                    alert('Silakan isi judul foto!');
+                    return;
+                }
+                
+                // Buat objek foto baru
+                const newPhoto = {
+                    title: photoTitle.value.toUpperCase(),
+                    description: photoDesc.value || 'Foto yang diupload',
+                    imageUrl: currentUpload.imageUrl,
+                    year: currentUpload.year
+                };
+                
+                // Tambahkan ke uploadedPhotos
+                uploadedPhotos.push(newPhoto);
+                
+                // Simpan ke localStorage
+                localStorage.setItem('retroGalleryPhotos', JSON.stringify(uploadedPhotos));
+                
+                // Reset form
+                currentUpload.imageUrl = '';
+                photoPreview.src = '';
+                previewContainer.style.display = 'none';
+                photoTitle.value = '';
+                photoDesc.value = '';
+                fileInput.value = '';
+                
+                // Refresh gallery dan pindah ke section photos
+                generatePhotoCards();
+                switchSection('photos');
+                playSound('flip');
+                
+                alert('Foto berhasil ditambahkan ke galeri!');
+            });
+        }
+
+        function switchSection(sectionId) {
+            // Update active tab
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.section === sectionId);
+            });
+            
+            // Show/hide sections
+            const sections = ['photos', 'biodata', 'upload'];
+            sections.forEach(section => {
+                const elem = document.getElementById(`${section}Section`);
+                if (elem) {
+                    elem.style.display = section === sectionId ? 'block' : 'none';
+                }
+            });
+            
+            // Reset slider position if switching to biodata
+            if (sectionId === 'biodata') {
+                setTimeout(() => {
+                    scrollToSlide(0);
+                }, 50);
+            }
+            
+            // Refresh photos jika pindah ke gallery
+            if (sectionId === 'photos') {
+                generatePhotoCards();
+            }
+        }
+
+        // [SIMPAN FUNGSI LAINNYA YANG SAMA]
+        // createParticles(), generateBiodataCards(), showGallery(), hideGallery(),
+        // navigateSlider(), scrollToSlide(), updateCards3DEffect(), updateScrollIndicator(),
+        // showExitScreen(), playSound(), darkenColor()
+
+        // Simpan semua fungsi lainnya dari kode sebelumnya di sini
+        // ...
+
+        function showGallery() {
+            const menu = document.getElementById('menuScreen');
+            const gallery = document.getElementById('galleryScreen');
+            
+            menu.style.opacity = '0';
+            menu.style.pointerEvents = 'none';
+            
+            setTimeout(() => {
+                menu.style.display = 'none';
+                gallery.style.display = 'flex';
+                
+                setTimeout(() => {
+                    gallery.style.opacity = '1';
+                }, 10);
+            }, 200);
+        }
+
+        function hideGallery() {
+            const menu = document.getElementById('menuScreen');
+            const gallery = document.getElementById('galleryScreen');
+            
+            gallery.style.opacity = '0';
+            gallery.style.pointerEvents = 'none';
+            
+            setTimeout(() => {
+                gallery.style.display = 'none';
+                menu.style.display = 'flex';
+                menu.style.pointerEvents = 'auto';
+                
+                setTimeout(() => {
+                    menu.style.opacity = '1';
+                }, 10);
+            }, 200);
+        }
+
+        let currentSlide = 0;
+        function navigateSlider(direction) {
+            let newIndex = currentSlide + direction;
+            if (newIndex < 0) newIndex = biodataList.length - 1;
+            if (newIndex >= biodataList.length) newIndex = 0;
+            scrollToSlide(newIndex);
+        }
+
+        function scrollToSlide(index) {
+            currentSlide = index;
+            const cards = document.querySelectorAll('.biodata-card');
+            if (cards[index]) {
+                cards[index].scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'center',
+                    inline: 'center'
+                });
+            }
+            updateScrollIndicator();
+        }
+
+        function updateCards3DEffect() {
+            const slider = document.getElementById('biodataSlider');
+            const cards = document.querySelectorAll('.biodata-card');
+            const sliderRect = slider.getBoundingClientRect();
+            const sliderCenter = sliderRect.left + sliderRect.width / 2;
+            
+            cards.forEach((card, index) => {
+                const cardRect = card.getBoundingClientRect();
+                const cardCenter = cardRect.left + cardRect.width / 2;
+                const distanceFromCenter = Math.abs(cardCenter - sliderCenter);
+                const maxDistance = sliderRect.width / 2;
+                const ratio = distanceFromCenter / maxDistance;
+                
+                // Reset classes
+                card.classList.remove('active', 'left', 'right');
+                
+                if (ratio < 0.2) {
+                    card.classList.add('active');
+                    currentSlide = index;
+                } else if (cardCenter < sliderCenter) {
+                    card.classList.add('left');
+                } else {
+                    card.classList.add('right');
+                }
+                
+                // Update opacity
+                card.style.opacity = 1 - Math.min(ratio * 1.2, 0.5);
+            });
+            
+            updateScrollIndicator();
+        }
+
+        function updateScrollIndicator() {
+            document.querySelectorAll('.scroll-dot').forEach((dot, index) => {
+                dot.classList.toggle('active', index === currentSlide);
+            });
+        }
+
+        function playSound(type) {
+            try {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                const frequencies = {
+                    select: 523.25, quit: 349.23, back: 392.00,
+                    click: 659.25, flip: 784.00, slide: 587.33
+                };
+                
+                oscillator.frequency.value = frequencies[type] || 440;
+                gainNode.gain.value = 0.1;
+                
+                oscillator.start();
+                setTimeout(() => oscillator.stop(), 150);
+            } catch (e) {
+                console.log("Audio not supported");
+            }
+        }
+
+        function darkenColor(color, percent) {
+            const num = parseInt(color.replace("#", ""), 16);
+            const amt = Math.round(2.55 * percent);
+            const R = (num >> 16) - amt;
+            const G = (num >> 8 & 0x00FF) - amt;
+            const B = (num & 0x0000FF) - amt;
+            
+            return "#" + (
+                0x1000000 +
+                (R < 255 ? R < 1 ? 0 : R : 255) * 0x10000 +
+                (G < 255 ? G < 1 ? 0 : G : 255) * 0x100 +
+                (B < 255 ? B < 1 ? 0 : B : 255)
+            ).toString(16).slice(1);
+        }
+
+        function createParticles() {
+            const container = document.getElementById('particlesContainer');
+            for (let i = 0; i < 15; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'pixel-particle';
+                particle.style.left = `${Math.random() * 100}%`;
+                particle.style.animationDelay = `${Math.random() * 15}s`;
+                particle.style.animationDuration = `${10 + Math.random() * 10}s`;
+                particle.style.background = `hsl(${Math.random() * 60 + 300}, 100%, 70%)`;
+                container.appendChild(particle);
+            }
+        }
+
+        function generateBiodataCards() {
+            const track = document.getElementById('sliderTrack');
+            const indicator = document.getElementById('scrollIndicator');
+            
+            track.innerHTML = '';
+            indicator.innerHTML = '';
+            
+            biodataList.forEach((data, index) => {
+                // Create card
+                const card = document.createElement('div');
+                card.className = 'biodata-card';
+                card.dataset.index = index;
+                card.innerHTML = `
+                    <div class="biodata-photo">
+                        <div class="biodata-initial" style="color: ${['#ff00ff', '#00ffff', '#ffff00'][index % 3]}">
+                            ${data.name.charAt(0)}
+                        </div>
+                    </div>
+                    <div class="biodata-name">${data.name}</div>
+                    <div class="biodata-detail"><span>NIM:</span> ${data.nim}</div>
+                    <div class="biodata-detail"><span>PRODI:</span> ${data.prodi}</div>
+                    <div class="biodata-detail"><span>SEMESTER:</span> ${data.semester}</div>
+                    <div class="biodata-detail"><span>EMAIL:</span> ${data.email}</div>
+                    <div class="biodata-detail"><span>HOBBY:</span> ${data.hobby}</div>
+                `;
+                
+                card.addEventListener('click', () => {
+                    scrollToSlide(index);
+                    playSound('click');
+                });
+                
+                track.appendChild(card);
+                
+                // Create indicator dot
+                const dot = document.createElement('div');
+                dot.className = 'scroll-dot';
+                dot.dataset.index = index;
+                dot.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    scrollToSlide(index);
+                    playSound('click');
+                });
+                indicator.appendChild(dot);
+            });
+        }
+
+        function showExitScreen() {
+            const exitHTML = `
+                <div style="
+                    position: fixed;
+                    top: 0; left: 0;
+                    width: 100%; height: 100%;
+                    background: rgba(0,0,0,0.95);
+                    display: flex; flex-direction: column;
+                    justify-content: center; align-items: center;
+                    z-index: 1000; animation: fadeIn 0.3s ease-out;
+                    padding: 20px; text-align: center;
+                ">
+                    <style>
+                        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+                    </style>
+                    <div style="color: #ff00ff; font-size: 24px; margin-bottom: 20px; text-shadow: 0 0 10px #ff00ff;">
+                        RETRO GALLERY
+                    </div>
+                    <div style="color: #00ffff; font-size: 16px; margin-bottom: 30px;">
+                        Terima kasih telah menggunakan aplikasi!<br>
+                        Foto yang diupload tersimpan di browser Anda.
+                    </div>
+                    <button onclick="window.location.reload()" style="
+                        background: rgba(255,0,255,0.2); border: 2px solid #ff00ff;
+                        color: #fff; padding: 12px 30px; font-family: 'Courier New';
+                        font-size: 16px; cursor: pointer; margin: 5px;
+                        border-radius: 4px;
+                    ">
+                        KELUAR
+                    </button>
+                    <button onclick="this.parentElement.remove()" style="
+                        background: rgba(0,255,255,0.2); border: 2px solid #00ffff;
+                        color: #fff; padding: 12px 30px; font-family: 'Courier New';
+                        font-size: 16px; cursor: pointer; margin-top: 15px;
+                        border-radius: 4px;
+                    ">
+                        BATAL
+                    </button>
+                    <div style="color: rgba(255,255,255,0.5); font-size: 12px; margin-top: 40px;">
+                        © 2024 Retro Gallery 3D
+                    </div>
+                </div>
+            `;
+            
+            document.body.insertAdjacentHTML('beforeend', exitHTML);
+        }
+    </script>
+</body>
+</html>
