@@ -759,7 +759,7 @@
             }
         }
  
-        /* Styles tambahan untuk uploader */
+        /* ===== STYLES UNTUK UPLOAD & PASSWORD ===== */
         .upload-btn {
             background: rgba(0, 255, 0, 0.2);
             border: 2px solid #00ff00;
@@ -814,6 +814,101 @@
             height: auto;
             display: block;
         }
+        
+        /* Password Input Styling */
+        .password-input {
+            width: 80%;
+            padding: 12px;
+            margin: 10px 0;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid #ff00ff;
+            color: white;
+            font-family: 'Courier New';
+            font-size: 14px;
+            text-align: center;
+            letter-spacing: 2px;
+            border-radius: 4px;
+        }
+        
+        .password-input:focus {
+            outline: none;
+            border-color: #00ffff;
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+        }
+        
+        .password-container {
+            animation: fadeIn 0.5s ease-out;
+        }
+        
+        .password-error {
+            color: #ff5555;
+            font-size: 12px;
+            margin-top: 5px;
+            text-align: center;
+            min-height: 20px;
+        }
+        
+        .password-success {
+            color: #55ff55;
+            font-size: 12px;
+            margin-top: 5px;
+            text-align: center;
+        }
+        
+        .upload-step {
+            display: none;
+        }
+        
+        .upload-step.active {
+            display: block;
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        .password-hint {
+            color: rgba(255, 255, 0, 0.6);
+            font-size: 11px;
+            margin-top: 5px;
+            text-align: center;
+            font-style: italic;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        
+        .step-indicator {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .step-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            transition: all 0.3s;
+        }
+        
+        .step-dot.active {
+            background: #ff00ff;
+            box-shadow: 0 0 8px #ff00ff;
+            transform: scale(1.3);
+        }
+        
+        .lock-icon {
+            font-size: 24px;
+            margin-bottom: 10px;
+            color: #ff00ff;
+            text-shadow: 0 0 10px #ff00ff;
+        }
     </style>
 </head>
 <body>
@@ -821,17 +916,17 @@
         <!-- Menu Screen -->
         <div class="menu-screen" id="menuScreen">
             <div class="animated-bg" id="particlesContainer"></div>
-            <div class="game-title">RETRO GALLERY</div>
+            <div class="game-title">UPLOAD FOTO LOE DIJAMIN AMAN 100%</div>
             
             <!-- Menu Buttons -->
             <div class="menu-buttons">
                 <button class="menu-btn" id="galleryBtn">GALERI FOTO</button>
                 <button class="menu-btn" id="biodataBtn">BIODATA</button>
-                <button class="menu-btn" id="uploadPhotoBtn">📷 UPLOAD FOTO</button>
+                <button class="menu-btn" id="uploadPhotoBtn">🔒 UPLOAD FOTO</button>
                 <button class="menu-btn" id="quitBtn">KELUAR</button>
             </div>
             
-            <div class="instruction">Pilih menu atau upload foto sendiri</div>
+            <div class="instruction">Pilih menu • Upload butuh password</div>
         </div>
         
         <!-- Gallery Screen -->
@@ -839,9 +934,9 @@
             <button class="back-button" id="backBtn">←</button>
             
             <div class="gallery-header">
-                <div class="gallery-title">GALLERY 3D</div>
+                <div class="gallery-title">GALLERY</div>
                 <div class="gallery-nav">
-                    <button class="nav-btn active" data-section="photos">FOTO 3D</button>
+                    <button class="nav-btn active" data-section="photos">FOTO</button>
                     <button class="nav-btn" data-section="biodata">BIODATA</button>
                     <button class="nav-btn" data-section="upload">UPLOAD FOTO</button>
                 </div>
@@ -850,7 +945,7 @@
             <div class="gallery-content">
                 <!-- Photos Section -->
                 <div class="section-content" id="photosSection">
-                    <div class="section-title">📸 Koleksi Foto Retro</div>
+                    <div class="section-title">📸 Koleksi Foto </div>
                     <div class="photo-grid" id="photoGrid"></div>
                     <div class="instruction">Tap kartu untuk flip • Tap kembali untuk normal</div>
                 </div>
@@ -871,36 +966,97 @@
                     <div class="instruction">Swipe atau tap tombol untuk navigasi</div>
                 </div>
                 
-                <!-- Upload Section -->
+                <!-- Upload Section dengan Password -->
                 <div class="section-content" id="uploadSection" style="display: none;">
-                    <div class="section-title">📤 Upload Foto Baru</div>
+                    <div class="section-title">🔒 Upload Foto (Dilindungi Password)</div>
                     
                     <div class="upload-container">
-                        <button class="upload-btn" id="selectPhotoBtn">
-                            <span>📁 PILIH FOTO</span>
-                        </button>
-                        
-                        <div class="preview-container" id="previewContainer">
-                            <img id="photoPreview" src="" alt="Preview">
+                        <!-- Step Indicator -->
+                        <div class="step-indicator">
+                            <div class="step-dot active" id="step1Dot"></div>
+                            <div class="step-dot" id="step2Dot"></div>
+                            <div class="step-dot" id="step3Dot"></div>
                         </div>
                         
-                        <div style="margin: 15px 0;">
-                            <input type="text" id="photoTitle" placeholder="Judul Foto" 
-                                   style="width: 80%; padding: 10px; margin: 10px 0; background: rgba(0,0,0,0.3); border: 1px solid #00ffff; color: white;">
-                            <input type="text" id="photoDesc" placeholder="Deskripsi Foto" 
-                                   style="width: 80%; padding: 10px; margin: 10px 0; background: rgba(0,0,0,0.3); border: 1px solid #00ffff; color: white;">
+                        <!-- STEP 1: Password Verification -->
+                        <div class="upload-step active" id="step1">
+                            <div class="lock-icon">🔐</div>
+                            <h3 style="color: #ff00ff; margin-bottom: 15px;">MASUKKAN PASSWORD</h3>
+                            <p style="color: rgba(255,255,255,0.7); margin-bottom: 20px; font-size: 14px;">
+                                Untuk mengupload foto, masukkan password terlebih dahulu
+                            </p>
+                            
+                            <input type="password" 
+                                   id="passwordInput" 
+                                   class="password-input" 
+                                   placeholder="Masukkan password..."
+                                   maxlength="20">
+                            
+                            <div class="password-error" id="passwordError"></div>
+                            <div class="password-hint">
+                                Password adalah "admin123" hehe
+                            </div>
+                            
+                            <button class="upload-btn" id="verifyPasswordBtn" 
+                                    style="margin-top: 20px; background: rgba(255,0,255,0.2); border-color: #ff00ff;">
+                                🔓 VERIFIKASI PASSWORD
+                            </button>
                         </div>
                         
-                        <button class="upload-btn" id="savePhotoBtn" style="background: rgba(255,0,255,0.2); border-color: #ff00ff;">
-                            💾 SIMPAN KE GALERI
-                        </button>
+                        <!-- STEP 2: Photo Selection -->
+                        <div class="upload-step" id="step2">
+                            <h3 style="color: #00ff00; margin-bottom: 15px;">PILIH FOTO</h3>
+                            <p style="color: rgba(255,255,255,0.7); margin-bottom: 20px; font-size: 14px;">
+                                Password diverifikasi! Sekarang pilih foto untuk diupload
+                            </p>
+                            
+                            <button class="upload-btn" id="selectPhotoBtn">
+                                <span>📁 PILIH FOTO</span>
+                            </button>
+                            
+                            <div class="preview-container" id="previewContainer">
+                                <img id="photoPreview" src="" alt="Preview">
+                            </div>
+                        </div>
+                        
+                        <!-- STEP 3: Photo Details -->
+                        <div class="upload-step" id="step3">
+                            <h3 style="color: #00ffff; margin-bottom: 15px;">DETAIL FOTO</h3>
+                            
+                            <div style="margin: 15px 0;">
+                                <input type="text" 
+                                       id="photoTitle" 
+                                       placeholder="Judul Foto" 
+                                       class="password-input"
+                                       style="width: 80%; margin: 10px auto; display: block;">
+                                <input type="text" 
+                                       id="photoDesc" 
+                                       placeholder="Deskripsi Foto (opsional)" 
+                                       class="password-input"
+                                       style="width: 80%; margin: 10px auto; display: block;">
+                            </div>
+                            
+                            <div class="password-success" id="uploadStatus"></div>
+                            
+                            <button class="upload-btn" id="savePhotoBtn" 
+                                    style="background: rgba(0,255,0,0.2); border-color: #00ff00;">
+                                💾 SIMPAN KE GALERI
+                            </button>
+                            
+                            <button class="upload-btn" id="backToStep2Btn" 
+                                    style="background: rgba(255,255,0,0.2); border-color: #ffff00; margin-top: 10px;">
+                                ↩ KEMBALI PILIH FOTO
+                            </button>
+                        </div>
                         
                         <div class="upload-instruction">
-                            Pilih foto dari perangkat Anda (JPG/PNG, maks 2MB)
+                            ⚠️ • Max 2MB • JPG/PNG
                         </div>
                     </div>
                     
-                    <div class="instruction">Foto tersimpan hanya untuk sesi ini (hilang saat refresh)</div>
+                    <div class="instruction">
+                        Foto tersimpan di browser Anda • Password bisa diubah di kode
+                    </div>
                 </div>
             </div>
         </div>
@@ -914,34 +1070,45 @@
     </div>
 
     <script>
+        // ===== KONFIGURASI PASSWORD =====
+        const PASSWORD_CONFIG = {
+            defaultPassword: "admin123", // Password default
+            maxAttempts: 3,              // Maksimal percobaan
+            lockoutTime: 30000,          // Waktu lockout (30 detik)
+            canChangePassword: true      // Bisa ubah password di localStorage
+        };
+
         // Data Arrays
         const photos = [
-            { title: "SUNSET RETRO", description: "Matahari terbenam dengan efek pixel art", color: "#ff6600", year: "2024" },
-            { title: "CYBER CITY", description: "Kota futuristik dengan neon lights", color: "#00ffff", year: "2024" },
-            { title: "PIXEL ART", description: "Karya seni digital 8-bit", color: "#ff00ff", year: "2023" },
-            { title: "RETRO GAME", description: "Koleksi game klasik arcade", color: "#ffff00", year: "2023" }
         ];
 
         const biodataList = [
-            { name: "ALEXANDER RIZKY", nim: "210101001", prodi: "TEKNIK INFORMATIKA", semester: "5", email: "alex@student.ac.id", hobby: "Game Dev, Pixel Art" },
+            { name: "FAHRID FAQIH", nim: "210101001", prodi: "TEKNIK INFORMATIKA", semester: "5", email: "alex@student.ac.id", hobby: "Game Dev, Pixel Art" },
             { name: "SARAH AMANDA", nim: "210101002", prodi: "SISTEM INFORMATIKA", semester: "4", email: "sarah@student.ac.id", hobby: "UI/UX Design, Photography" },
             { name: "MICHAEL SANTOSO", nim: "210101003", prodi: "TEKNIK KOMPUTER", semester: "6", email: "michael@student.ac.id", hobby: "Network Security, Coding" }
         ];
 
-        // User uploaded photos (disimpan di localStorage)
+        // ===== VARIABEL SISTEM PASSWORD =====
         let uploadedPhotos = JSON.parse(localStorage.getItem('retroGalleryPhotos')) || [];
-        
-        // Current photo data for upload
         let currentUpload = {
             imageUrl: '',
             title: '',
             description: '',
             year: new Date().getFullYear().toString()
         };
+        
+        // Variabel untuk password system
+        let passwordAttempts = JSON.parse(localStorage.getItem('passwordAttempts')) || 0;
+        let lastAttemptTime = JSON.parse(localStorage.getItem('lastAttemptTime')) || 0;
+        let isLockedOut = false;
+        let isAuthenticated = false;
+        let currentPassword = localStorage.getItem('galleryPassword') || PASSWORD_CONFIG.defaultPassword;
+        let currentStep = 1;
 
         // Initialize App
         document.addEventListener('DOMContentLoaded', function() {
             initApp();
+            checkLockoutStatus();
         });
 
         function initApp() {
@@ -953,30 +1120,152 @@
             updateScrollIndicator();
         }
 
-        // [SIMPAN SEMUA FUNGSI SEBELUMNYA SAMPAI generatePhotoCards()]
+        // ===== FUNGSI SISTEM PASSWORD =====
+        function checkLockoutStatus() {
+            const currentTime = Date.now();
+            const timeSinceLastAttempt = currentTime - lastAttemptTime;
+            
+            if (passwordAttempts >= PASSWORD_CONFIG.maxAttempts && 
+                timeSinceLastAttempt < PASSWORD_CONFIG.lockoutTime) {
+                isLockedOut = true;
+                const remainingTime = Math.ceil((PASSWORD_CONFIG.lockoutTime - timeSinceLastAttempt) / 1000);
+                
+                // Update UI untuk lockout
+                document.getElementById('passwordError').textContent = 
+                    `⏳ Terlalu banyak percobaan! Coba lagi dalam ${remainingTime} detik`;
+                document.getElementById('verifyPasswordBtn').disabled = true;
+                
+                // Auto unlock setelah waktu habis
+                setTimeout(() => {
+                    resetPasswordAttempts();
+                }, PASSWORD_CONFIG.lockoutTime - timeSinceLastAttempt);
+            }
+        }
 
+        function resetPasswordAttempts() {
+            passwordAttempts = 0;
+            isLockedOut = false;
+            localStorage.setItem('passwordAttempts', JSON.stringify(passwordAttempts));
+            document.getElementById('passwordError').textContent = '';
+            document.getElementById('verifyPasswordBtn').disabled = false;
+        }
+
+        function verifyPassword(inputPassword) {
+            const currentTime = Date.now();
+            
+            // Cek lockout
+            if (isLockedOut) {
+                const timeSinceLastAttempt = currentTime - lastAttemptTime;
+                const remainingTime = Math.ceil((PASSWORD_CONFIG.lockoutTime - timeSinceLastAttempt) / 1000);
+                return {
+                    success: false,
+                    message: `⏳ Terlalu banyak percobaan! Tunggu ${remainingTime} detik`
+                };
+            }
+            
+            // Update attempt time
+            lastAttemptTime = currentTime;
+            localStorage.setItem('lastAttemptTime', JSON.stringify(lastAttemptTime));
+            
+            // Verifikasi password
+            if (inputPassword === currentPassword) {
+                // Reset attempts jika berhasil
+                passwordAttempts = 0;
+                localStorage.setItem('passwordAttempts', JSON.stringify(passwordAttempts));
+                isAuthenticated = true;
+                return {
+                    success: true,
+                    message: "✅ Password benar! Mengalihkan..."
+                };
+            } else {
+                // Increment failed attempts
+                passwordAttempts++;
+                localStorage.setItem('passwordAttempts', JSON.stringify(passwordAttempts));
+                
+                const remainingAttempts = PASSWORD_CONFIG.maxAttempts - passwordAttempts;
+                
+                if (passwordAttempts >= PASSWORD_CONFIG.maxAttempts) {
+                    isLockedOut = true;
+                    return {
+                        success: false,
+                        message: `❌ Terlalu banyak percobaan! Tunggu ${PASSWORD_CONFIG.lockoutTime/1000} detik`
+                    };
+                }
+                
+                return {
+                    success: false,
+                    message: `❌ Password salah! Sisa percobaan: ${remainingAttempts}`
+                };
+            }
+        }
+
+        function changePassword(oldPassword, newPassword) {
+            if (oldPassword === currentPassword) {
+                if (PASSWORD_CONFIG.canChangePassword) {
+                    currentPassword = newPassword;
+                    localStorage.setItem('galleryPassword', newPassword);
+                    return {
+                        success: true,
+                        message: "✅ Password berhasil diubah!"
+                    };
+                } else {
+                    return {
+                        success: false,
+                        message: "❌ Ubah password dinonaktifkan"
+                    };
+                }
+            } else {
+                return {
+                    success: false,
+                    message: "❌ Password lama salah"
+                };
+            }
+        }
+
+        // ===== FUNGSI UPLOAD MULTI-STEP =====
+        function goToStep(stepNumber) {
+            // Reset semua step
+            document.querySelectorAll('.upload-step').forEach(step => {
+                step.classList.remove('active');
+            });
+            
+            // Reset semua dot
+            document.querySelectorAll('.step-dot').forEach(dot => {
+                dot.classList.remove('active');
+            });
+            
+            // Aktifkan step yang dipilih
+            document.getElementById(`step${stepNumber}`).classList.add('active');
+            document.getElementById(`step${stepNumber}Dot`).classList.add('active');
+            
+            currentStep = stepNumber;
+            
+            // Scroll ke atas
+            document.querySelector('.upload-container').scrollIntoView({ 
+                behavior: 'smooth', 
+                block: 'start' 
+            });
+        }
+
+        // ===== FUNGSI UTAMA =====
         function generatePhotoCards() {
             const container = document.getElementById('photoGrid');
             container.innerHTML = '';
             
-            // Gabungkan photos default dengan uploadedPhotos
             const allPhotos = [...photos, ...uploadedPhotos];
             
             allPhotos.forEach((photo, index) => {
                 const card = document.createElement('div');
                 card.className = 'pixel-card';
                 
-                // Cek jika foto punya imageUrl (uploaded) atau color (default)
                 let photoContent;
                 if (photo.imageUrl) {
-                    // Foto dari upload - gunakan <img>
                     photoContent = `
                         <img src="${photo.imageUrl}" 
                              alt="${photo.title}" 
                              style="width: 100%; height: 100%; object-fit: cover;">
                     `;
                 } else {
-                    // Foto default - gunakan gradient
                     photoContent = `
                         <div style="
                             width: 100%;
@@ -1009,7 +1298,7 @@
                             <div class="card-back-title">${photo.title}</div>
                             <div class="card-back-desc">${photo.description}</div>
                             <div style="color: ${photo.color || '#ff00ff'}; font-size: 16px; margin-top: 10px; font-weight: bold;">
-                                ${photo.imageUrl ? '📱 FOTO UPLOAD' : `TAHUN: ${photo.year}`}
+                                ${photo.imageUrl ? '🔒 FOTO TERPROTEKSI' : `TAHUN: ${photo.year}`}
                             </div>
                         </div>
                     </div>
@@ -1042,6 +1331,11 @@
                 playSound('select');
                 showGallery();
                 switchSection('upload');
+                // Reset ke step 1 setiap kali masuk upload
+                goToStep(1);
+                isAuthenticated = false;
+                document.getElementById('passwordInput').value = '';
+                document.getElementById('passwordError').textContent = '';
             });
             
             document.getElementById('quitBtn').addEventListener('click', () => {
@@ -1063,8 +1357,59 @@
                 });
             });
             
-            // Upload functionality
-            setupUploadFunctionality();
+            // ===== PASSWORD & UPLOAD EVENT LISTENERS =====
+            // Verify Password
+            document.getElementById('verifyPasswordBtn').addEventListener('click', () => {
+                const passwordInput = document.getElementById('passwordInput');
+                const passwordError = document.getElementById('passwordError');
+                
+                if (!passwordInput.value.trim()) {
+                    passwordError.textContent = "❌ Masukkan password!";
+                    playSound('error');
+                    return;
+                }
+                
+                const result = verifyPassword(passwordInput.value);
+                passwordError.textContent = result.message;
+                
+                if (result.success) {
+                    playSound('success');
+                    passwordError.style.color = '#55ff55';
+                    
+                    // Pindah ke step 2 setelah 1 detik
+                    setTimeout(() => {
+                        goToStep(2);
+                    }, 1000);
+                } else {
+                    playSound('error');
+                    passwordError.style.color = '#ff5555';
+                    passwordInput.value = '';
+                    passwordInput.focus();
+                }
+            });
+            
+            // Enter key untuk password
+            document.getElementById('passwordInput').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    document.getElementById('verifyPasswordBtn').click();
+                }
+            });
+            
+            // Select Photo
+            document.getElementById('selectPhotoBtn').addEventListener('click', () => {
+                document.getElementById('fileInput').click();
+            });
+            
+            // Back to step 2
+            document.getElementById('backToStep2Btn').addEventListener('click', () => {
+                goToStep(2);
+            });
+            
+            // File input change
+            document.getElementById('fileInput').addEventListener('change', handleFileSelect);
+            
+            // Save Photo
+            document.getElementById('savePhotoBtn').addEventListener('click', savePhoto);
             
             // Slider controls
             let isAnimating = false;
@@ -1097,96 +1442,107 @@
             });
         }
 
-        function setupUploadFunctionality() {
-            const fileInput = document.getElementById('fileInput');
-            const selectBtn = document.getElementById('selectPhotoBtn');
-            const saveBtn = document.getElementById('savePhotoBtn');
-            const previewContainer = document.getElementById('previewContainer');
-            const photoPreview = document.getElementById('photoPreview');
+        function handleFileSelect(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            // Validasi ukuran file (max 2MB)
+            if (file.size > 2 * 1024 * 1024) {
+                alert('❌ Ukuran file terlalu besar! Maksimal 2MB.');
+                playSound('error');
+                return;
+            }
+            
+            // Validasi tipe file
+            if (!file.type.match('image.*')) {
+                alert('❌ Hanya file gambar yang diizinkan!');
+                playSound('error');
+                return;
+            }
+            
+            const reader = new FileReader();
+            
+            reader.onload = function(event) {
+                // Tampilkan preview
+                currentUpload.imageUrl = event.target.result;
+                document.getElementById('photoPreview').src = currentUpload.imageUrl;
+                document.getElementById('previewContainer').style.display = 'block';
+                
+                // Isi otomatis judul dari nama file
+                document.getElementById('photoTitle').value = 
+                    file.name.replace(/\.[^/.]+$/, "").toUpperCase();
+                document.getElementById('photoDesc').value = 
+                    `Foto diupload pada ${new Date().toLocaleDateString('id-ID')}`;
+                
+                // Pindah ke step 3
+                goToStep(3);
+                playSound('select');
+            };
+            
+            reader.readAsDataURL(file);
+        }
+
+        function savePhoto() {
             const photoTitle = document.getElementById('photoTitle');
             const photoDesc = document.getElementById('photoDesc');
+            const uploadStatus = document.getElementById('uploadStatus');
             
-            // Buka file dialog
-            selectBtn.addEventListener('click', () => {
-                fileInput.click();
-            });
+            if (!currentUpload.imageUrl) {
+                uploadStatus.textContent = "❌ Silakan pilih foto terlebih dahulu!";
+                uploadStatus.style.color = '#ff5555';
+                playSound('error');
+                return;
+            }
             
-            // Handle file selection
-            fileInput.addEventListener('change', function(e) {
-                const file = e.target.files[0];
-                if (!file) return;
-                
-                // Validasi ukuran file (max 2MB)
-                if (file.size > 2 * 1024 * 1024) {
-                    alert('Ukuran file terlalu besar! Maksimal 2MB.');
-                    return;
-                }
-                
-                // Validasi tipe file
-                if (!file.type.match('image.*')) {
-                    alert('Hanya file gambar yang diizinkan!');
-                    return;
-                }
-                
-                const reader = new FileReader();
-                
-                reader.onload = function(event) {
-                    // Tampilkan preview
-                    currentUpload.imageUrl = event.target.result;
-                    photoPreview.src = currentUpload.imageUrl;
-                    previewContainer.style.display = 'block';
-                    
-                    // Isi otomatis judul dari nama file
-                    photoTitle.value = file.name.replace(/\.[^/.]+$/, "").toUpperCase();
-                    photoDesc.value = `Foto yang diupload pada ${new Date().toLocaleDateString()}`;
-                    
-                    playSound('select');
-                };
-                
-                reader.readAsDataURL(file);
-            });
+            if (!photoTitle.value.trim()) {
+                uploadStatus.textContent = "❌ Silakan isi judul foto!";
+                uploadStatus.style.color = '#ff5555';
+                playSound('error');
+                return;
+            }
             
-            // Handle save photo
-            saveBtn.addEventListener('click', () => {
-                if (!currentUpload.imageUrl) {
-                    alert('Silakan pilih foto terlebih dahulu!');
-                    return;
-                }
-                
-                if (!photoTitle.value.trim()) {
-                    alert('Silakan isi judul foto!');
-                    return;
-                }
-                
-                // Buat objek foto baru
-                const newPhoto = {
-                    title: photoTitle.value.toUpperCase(),
-                    description: photoDesc.value || 'Foto yang diupload',
-                    imageUrl: currentUpload.imageUrl,
-                    year: currentUpload.year
-                };
-                
-                // Tambahkan ke uploadedPhotos
-                uploadedPhotos.push(newPhoto);
-                
-                // Simpan ke localStorage
-                localStorage.setItem('retroGalleryPhotos', JSON.stringify(uploadedPhotos));
-                
-                // Reset form
-                currentUpload.imageUrl = '';
-                photoPreview.src = '';
-                previewContainer.style.display = 'none';
-                photoTitle.value = '';
-                photoDesc.value = '';
-                fileInput.value = '';
-                
+            // Buat objek foto baru
+            const newPhoto = {
+                title: photoTitle.value.toUpperCase(),
+                description: photoDesc.value || 'Foto yang diupload dengan password',
+                imageUrl: currentUpload.imageUrl,
+                year: currentUpload.year,
+                uploadedAt: new Date().toISOString(),
+                protected: true
+            };
+            
+            // Tambahkan ke uploadedPhotos
+            uploadedPhotos.push(newPhoto);
+            
+            // Simpan ke localStorage
+            localStorage.setItem('retroGalleryPhotos', JSON.stringify(uploadedPhotos));
+            
+            // Reset form
+            currentUpload.imageUrl = '';
+            document.getElementById('photoPreview').src = '';
+            document.getElementById('previewContainer').style.display = 'none';
+            photoTitle.value = '';
+            photoDesc.value = '';
+            document.getElementById('fileInput').value = '';
+            
+            // Update status
+            uploadStatus.textContent = "✅ Foto berhasil ditambahkan ke galeri!";
+            uploadStatus.style.color = '#55ff55';
+            playSound('success');
+            
+            // Kembali ke step 1 setelah 2 detik
+            setTimeout(() => {
                 // Refresh gallery dan pindah ke section photos
                 generatePhotoCards();
                 switchSection('photos');
-                playSound('flip');
                 
-                alert('Foto berhasil ditambahkan ke galeri!');
-            });
+                // Reset upload section untuk next time
+                goToStep(1);
+                isAuthenticated = false;
+                document.getElementById('passwordInput').value = '';
+                document.getElementById('passwordError').textContent = '';
+                uploadStatus.textContent = '';
+            }, 2000);
         }
 
         function switchSection(sectionId) {
@@ -1215,15 +1571,12 @@
             if (sectionId === 'photos') {
                 generatePhotoCards();
             }
+            
+            // Reset upload jika pindah ke upload
+            if (sectionId === 'upload') {
+                goToStep(1);
+            }
         }
-
-        // [SIMPAN FUNGSI LAINNYA YANG SAMA]
-        // createParticles(), generateBiodataCards(), showGallery(), hideGallery(),
-        // navigateSlider(), scrollToSlide(), updateCards3DEffect(), updateScrollIndicator(),
-        // showExitScreen(), playSound(), darkenColor()
-
-        // Simpan semua fungsi lainnya dari kode sebelumnya di sini
-        // ...
 
         function showGallery() {
             const menu = document.getElementById('menuScreen');
@@ -1330,14 +1683,15 @@
                 
                 const frequencies = {
                     select: 523.25, quit: 349.23, back: 392.00,
-                    click: 659.25, flip: 784.00, slide: 587.33
+                    click: 659.25, flip: 784.00, slide: 587.33,
+                    success: 659.25, error: 392.00
                 };
                 
                 oscillator.frequency.value = frequencies[type] || 440;
                 gainNode.gain.value = 0.1;
                 
                 oscillator.start();
-                setTimeout(() => oscillator.stop(), 150);
+                setTimeout(() => oscillator.stop(), type === 'error' ? 300 : 150);
             } catch (e) {
                 console.log("Audio not supported");
             }
@@ -1379,7 +1733,6 @@
             indicator.innerHTML = '';
             
             biodataList.forEach((data, index) => {
-                // Create card
                 const card = document.createElement('div');
                 card.className = 'biodata-card';
                 card.dataset.index = index;
@@ -1433,11 +1786,12 @@
                         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
                     </style>
                     <div style="color: #ff00ff; font-size: 24px; margin-bottom: 20px; text-shadow: 0 0 10px #ff00ff;">
-                        RETRO GALLERY
+                        KOTA INI TAK SAMA TANPAMU
                     </div>
                     <div style="color: #00ffff; font-size: 16px; margin-bottom: 30px;">
-                        Terima kasih telah menggunakan aplikasi!<br>
-                        Foto yang diupload tersimpan di browser Anda.
+                        Terima kasih telah menggunakan website!<br>
+                        Foto yang diupload tersimpan di browser Anda.<br>
+                        <small style="color: rgba(255,255,255,0.5);">Password: ${currentPassword}</small>
                     </div>
                     <button onclick="window.location.reload()" style="
                         background: rgba(255,0,255,0.2); border: 2px solid #ff00ff;
@@ -1456,7 +1810,7 @@
                         BATAL
                     </button>
                     <div style="color: rgba(255,255,255,0.5); font-size: 12px; margin-top: 40px;">
-                        © 2024 Retro Gallery 3D
+                        © payd ;)
                     </div>
                 </div>
             `;
